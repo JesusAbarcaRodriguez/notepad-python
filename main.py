@@ -1,30 +1,53 @@
 import os
 from tkinter import *
-from tkinter import filedialog, colorchooser, font
+from tkinter import filedialog, colorchooser, font, ttk
 from tkinter.messagebox import *
-from tkinter.filedialog import *
 
 def new_file():
-    pass
+    window.title("Untitled")
+    file = None
+    text_area.delete(1.0, END)
+
 def change_color():
     color = colorchooser.askcolor(title="Pick a color")
-    text_area.config(fg=color[1])
+    if color:
+        text_area.config(insertbackground=color[1], fg=color[1])
+
 def change_font(*args):
-    pass
+    text_area.config(font=(font_name.get(), int(font_size.get())))
+
 def open_file():
-    pass
+    file = filedialog.askopenfilename(defaultextension=".txt", filetypes=[("All Files", "*.*"), ("Text Documents", "*.txt")])
+    if file == "":
+        file = None
+    else:
+        window.title(os.path.basename(file) + " - Notepad")
+        text_area.delete(1.0, END)
+        with open(file, "r") as file_contents:
+            text_area.insert(1.0, file_contents.read())
+
 def save_file():
-    pass
+    file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("All Files", "*.*"), ("Text Documents", "*.txt")])
+    if file == "":
+        file = None
+    else:
+        with open(file, "w") as file_contents:
+            file_contents.write(text_area.get(1.0, END))
+
 def cut_text():
-    pass
+    text_area.event_generate("<<Cut>>")
+
 def copy_text():
-    pass
+    text_area.event_generate("<<Copy>>")
+
 def paste_text():
-    pass
+    text_area.event_generate("<<Paste>>")
+
 def about():
-    pass
+    showinfo("Notepad", "Notepad by Python")
+
 def exit():
-    pass
+    window.destroy()
 
 window = Tk()
 window.title("Note Pad")
@@ -54,8 +77,35 @@ text_area.grid(sticky=N + E + S + W)
 
 frame = Frame(window)
 frame.grid()
-color_button = Button(frame, text="Color",command=change_color)
+color_button = Button(frame, text="Color", command=change_color, bg="#007bff", fg="#ffffff")
 color_button.grid(row=0, column=0)
+
+font_box = OptionMenu(frame, font_name, *font.families(), command=change_font)
+font_box.grid(row=0, column=1)
+
+size_box = Spinbox(frame, from_=1, to=100, textvariable=font_size, command=change_font)
+size_box.grid(row=0, column=2)
+
+menu_bar = Menu(window)
+window.config(menu=menu_bar)
+file_menu = Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="File", menu=file_menu)
+file_menu.add_command(label="New", command=new_file)
+file_menu.add_command(label="Open", command=open_file)
+file_menu.add_command(label="Save", command=save_file)
+file_menu.add_separator()
+file_menu.add_command(label="Exit", command=exit)
+
+edit_menu = Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Edit", menu=edit_menu)
+edit_menu.add_command(label="Cut", command=cut_text)
+edit_menu.add_command(label="Copy", command=copy_text)
+edit_menu.add_command(label="Paste", command=paste_text)
+
+help_menu = Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Help", menu=help_menu)
+help_menu.add_command(label="About", command=about)
+
 scroll_bar.pack(side=RIGHT, fill=Y)
 text_area.config(yscrollcommand=scroll_bar.set)
 
